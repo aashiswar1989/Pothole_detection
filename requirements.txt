@@ -1,0 +1,11 @@
+numpy
+pandas
+scikit-learn
+opencv-python
+matplotlib
+dvc
+mlflow
+gradio
+ultralytics
+boto3
+-e .
