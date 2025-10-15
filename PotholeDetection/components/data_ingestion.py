@@ -1,5 +1,7 @@
 from pathlib import Path
-from PotholeDetection.config_manager.component_config import DataIngestionConfig
+
+from dvc.api import dataset
+from PotholeDetection.config_manager.component_config import DataIngestionConfig, DataIngestionArtifact
 from PotholeDetection.logging.logger import logger
 
 import boto3
@@ -20,22 +22,32 @@ class DataIngestion:
             paginator = self.s3.get_paginator('list_objects_v2')
             page_iterator = paginator.paginate(Bucket = self.config.s3_bucket, Prefix = self.config.s3_prefix)
 
+            dataset_path  = self.config.artifacts_dir/self.config.s3_prefix
+            if not dataset_path.exists():
+                dataset_path.mkdir(parents=True, exist_ok=True)
+
             for page in page_iterator:
                 for obj in page.get('Contents', []):
                     key = obj['Key']
                     if key.endswith('/'):
                         continue
 
-                    root_dir = Path.cwd().parent.parent
-                    data_dir_path = root_dir/Path(key).parent
-                    data_file_path = root_dir/Path(key)
+                    relative_path = Path(key).relative_to(self.config.s3_prefix)
+                    data_dir_path = dataset_path/relative_path.parent
+                    data_file_path = dataset_path/relative_path
+
                     if not data_dir_path.exists():
                         data_dir_path.mkdir(parents=True, exist_ok=True)
 
                     self.s3.download_file(self.config.s3_bucket, key, data_file_path)
             
             logger.info("Dataset download from S3 bucket completed successfully")
+            return dataset_path
 
+        except NoCredentialsError as e:
+            logger.error("AWS access error: No credentials provided or invalid credentials")
+            raise e
+        
         except Exception as e:
             logger.error("")
             raise e
@@ -46,14 +58,18 @@ class DataIngestion:
         """
         try:
             logger.info("Data ingestion started")
-            self.navigate_s3_bucket()
+            dataset_dir = self.navigate_s3_bucket()
             logger.info("Data ingestion completed successfully")
+
+            ingestion_artifacts = DataIngestionArtifact(dataset = dataset_dir)
+            return ingestion_artifacts
+
 
         except Exception as e:
             logger.error("Error in data ingestion")
             raise e
         
-if __name__ == "__main__":
-    config = DataIngestionConfig()
-    obj = DataIngestion(config)
-    obj.initiate_data_ingestion()
+# if __name__ == "__main__":
+#     config = DataIngestionConfig()
+#     obj = DataIngestion(config)
+#     obj.initiate_data_ingestion()
