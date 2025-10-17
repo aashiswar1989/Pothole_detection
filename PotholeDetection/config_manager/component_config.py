@@ -14,11 +14,14 @@ class DataIngestionConfig():
 class DataIngestionArtifact():
     dataset: Path
 
+@dataclass
+class DataValidationConfig():
+    dataset: Path
+    data_split: list = DATA_SPLIT
+    supported_img_ext: list = VALID_IMG_EXT
+    artifacts_dir: Path = ARTIFACTS_ROOT/'data_validation'
 
 @dataclass
-class DataTransformationConfig():
-    dataset: Path = DATASET_PATH
-    train_data: Path = TRAIN_DATA
-    test_data: Path = TEST_DATA
-    val_data: Path = VAL_DATA
-    data_yaml_file: str = DATA_YAML
+class DataValidationArtifact():
+    validation_report: Path
+    validation_status: bool

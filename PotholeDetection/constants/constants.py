@@ -2,6 +2,8 @@ from pathlib import Path
 
 PROJECT_ROOT_DIR = Path(__file__).resolve().parents[2]
 ARTIFACTS_ROOT = PROJECT_ROOT_DIR/'artifacts'
+DATA_SPLIT = ['train', 'test', 'valid']
+VALID_IMG_EXT = ['.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.tif', '.webp']
 DATASET_PATH = Path(r'C:\AI_ML\Projects\Pothole_Detection\dataset')
 TRAIN_DATA = DATASET_PATH/'train'
 TEST_DATA = DATASET_PATH/'test'
