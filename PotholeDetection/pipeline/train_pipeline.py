@@ -1,10 +1,13 @@
 from pathlib import Path
+from dotenv import load_dotenv
 from PotholeDetection.config_manager.component_config import DataIngestionConfig, DataIngestionArtifact
 from PotholeDetection.config_manager.component_config import DataValidationConfig, DataValidationArtifact
 from PotholeDetection.config_manager.component_config import ModelTrainingConfig, ModelTrainingArtifact
 from PotholeDetection.components.data_ingestion import DataIngestion
 from PotholeDetection.components.data_validation import DataValidation
 from PotholeDetection.components.train import ModelTrainer
+
+load_dotenv()
 
 ingestion_obj = DataIngestionConfig()
 data_ingestion = DataIngestion(ingestion_obj)
