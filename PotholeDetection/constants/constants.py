@@ -4,6 +4,7 @@ PROJECT_ROOT_DIR = Path(__file__).resolve().parents[2]
 ARTIFACTS_ROOT = PROJECT_ROOT_DIR/'artifacts'
 S3_Bucket = 'pothotle-dataset'
 S3_Prefix = 'dataset/'
+S3_Model_Key = 'models/best_model.pt'
 DATA_SPLIT = ['train', 'test', 'valid']
 VALID_IMG_EXT = ['.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.tif', '.webp']
 MODEL_NAME = 'yolov8s.pt'

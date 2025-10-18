@@ -45,9 +45,13 @@ class ModelTrainingConfig:
     warmup_epochs: int = WARMUP_EPOCHS
     val_data: bool = VAL_DATA
     plots: bool = PLOTS
+    s3_bucket: str = S3_Bucket
+    s3_model_key: str = S3_Model_Key
 
 
 @dataclass
 class ModelTrainingArtifact:
     best_model: Path
     last_model: Path
+    s3_model_path: str
+    s3_uri: str
