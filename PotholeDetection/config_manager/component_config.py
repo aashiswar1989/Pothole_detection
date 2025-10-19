@@ -1,5 +1,7 @@
 from pathlib import Path
 from dataclasses import dataclass
+
+from dvc.api import dataset
 from PotholeDetection.constants.constants import *
 
 @dataclass
@@ -55,3 +57,18 @@ class ModelTrainingArtifact:
     last_model: Path
     s3_model_path: str
     s3_uri: str
+
+
+@dataclass
+class ModelEvaluationConfig:
+    dataset: Path
+    model_path: Path = ARTIFACTS_ROOT/'training'/'best.pt'
+    artifacts_dir: Path = ARTIFACTS_ROOT/'evaluation'
+    model_name: str = MODEL_NAME
+
+@dataclass
+class ModelEvaluationArtifact:
+    eval_report: Path
+    eval_results: dict
+
+    
