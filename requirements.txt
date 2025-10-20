@@ -8,4 +8,4 @@ mlflow
 gradio
 ultralytics
 boto3
--e .
+fastapi

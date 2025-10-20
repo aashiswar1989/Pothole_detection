@@ -2,6 +2,8 @@ from pathlib import Path
 
 PROJECT_ROOT_DIR = Path(__file__).resolve().parents[2]
 ARTIFACTS_ROOT = PROJECT_ROOT_DIR/'artifacts'
+ENV_PATH = PROJECT_ROOT_DIR/'.env'
+APP_PATH = PROJECT_ROOT_DIR/'app'
 S3_Bucket = 'pothotle-dataset'
 S3_Prefix = 'dataset/'
 S3_Model_Key = 'models/best_model.pt'
