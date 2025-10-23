@@ -33,11 +33,11 @@ def gradio_interface():
 
         gr.HTML("<h1 style='text-align:center; color:#023047;'>🛣️ Pothole Detection Dashboard</h1>")
 
-        with gr.row():
+        with gr.Row():
             image_in = gr.Image(type = 'filepath', label = 'Upload image')
             json_out = gr.Code(label = 'Detections', language= 'json')
 
-        with gr.row():
+        with gr.Row():
             detect_btn = gr.Button('Detect', variant='primary')
             reset_btn = gr.Button('Reset', variant = 'secondary')
 
