@@ -59,7 +59,7 @@ jobs:
     - name: Build image and push 
       uses: docker/build-push-action@v6
       with:
-            context .
+            context: .
             push: true
             tags: ${{secrets.DOCKER_USERNAME}}/pothole-detector:latest
             cache-from: type=registry, ref=${{secrets.DOCKER_USERNAME}}/pothole-detector:cache
