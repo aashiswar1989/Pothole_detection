@@ -25,8 +25,8 @@ VAL_DATA = True
 PLOTS = True
 
 
-DATASET_PATH = Path(r'C:\AI_ML\Projects\Pothole_Detection\dataset')
-TRAIN_DATA = DATASET_PATH/'train'
-TEST_DATA = DATASET_PATH/'test'
-VAL_DATA = DATASET_PATH/'val'
-DATA_YAML = str(DATASET_PATH/'data.yaml')
+# DATASET_PATH = Path(r'C:\AI_ML\Projects\Pothole_Detection\dataset')
+# TRAIN_DATA = DATASET_PATH/'train'
+# TEST_DATA = DATASET_PATH/'test'
+# VAL_DATA = DATASET_PATH/'val'
+# DATA_YAML = str(DATASET_PATH/'data.yaml')

@@ -1,0 +1,15 @@
+train:
+  MODEL_NAME: 'yolov8s.pt'
+  IMG_SIZE: 640
+  EPOCHS: 50
+  BATCH_SIZE: 16
+  PATIENCE: 5
+  OPTIMIZER: 'auto'
+  LR0: 0.01
+  LRF: 0.01
+  MOMENTUM: 0.937
+  WEIGHT_DECAY: 0.0005
+  WORKERS: 8
+  WARMUP_EPOCHS: 3
+  VAL_DATA: True
+  PLOTS: True

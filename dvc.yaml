@@ -1,0 +1,57 @@
+stages:
+  data_ingestion:
+    cmd: python PotholeDetection/components/data_ingestion.py
+
+    deps:
+      - .env
+      - PotholeDetection/config_manager/component_config.py
+      - PotholeDetection/constants/constants.py
+
+    outs:
+      - artifacts/data_ingestion
+
+
+  data_validation:
+    cmd: python PotholeDetection/components/data_validation.py
+
+    deps:
+      - PotholeDetection/config_manager/component_config.py
+      - PotholeDetection/constants/constants.py
+      - artifacts/data_ingestion
+      - PotholeDetection/components/data_validation.py
+
+    outs:
+      - artifacts/data_validation
+
+
+  model_training:
+    cmd: python PotholeDetection/components/train.py
+
+    deps:
+      - .env
+      - PotholeDetection/config_manager/component_config.py
+      - PotholeDetection/constants/constants.py
+      - artifacts/data_validation
+      - PotholeDetection/components/train.py
+
+    params:
+      - params.yaml
+
+    outs:
+      - artifacts/training
+
+
+  model_evaluation:
+    cmd: python PotholeDetection/components/evaluate.py
+
+    deps:
+      - PotholeDetection/config_manager/component_config.py
+      - PotholeDetection/constants/constants.py
+      - artifacts/training
+      - PotholeDetection/components/evaluate.py
+
+    outs:
+      - artifacts/evaluation/evaluation_report.json
+
+    metrics:
+      - artifacts/evaluation/evaluation_report.json

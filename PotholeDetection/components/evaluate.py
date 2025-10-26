@@ -46,6 +46,7 @@ class ModelEvaluator:
                 self.config.artifacts_dir.mkdir(parents = True, exist_ok = True)
 
             evaluation_report = self.config.artifacts_dir/'evaluation_report.json'
+            # metrics_report = self.config.artifacts_dir/'metrics.json'
             with open(evaluation_report, 'w') as f:
                 json.dump(report_content, f, indent = 4)
 

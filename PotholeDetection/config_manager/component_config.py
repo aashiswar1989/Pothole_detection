@@ -1,7 +1,6 @@
 from pathlib import Path
 from dataclasses import dataclass
 
-from dvc.api import dataset
 from PotholeDetection.constants.constants import *
 
 @dataclass

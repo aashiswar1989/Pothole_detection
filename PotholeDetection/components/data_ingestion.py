@@ -1,6 +1,4 @@
 from pathlib import Path
-
-from dvc.api import dataset
 from PotholeDetection.config_manager.component_config import DataIngestionConfig, DataIngestionArtifact
 from PotholeDetection.logging.logger import logger
 
