@@ -1,9 +1,13 @@
 from pathlib import Path
+import json
+from dotenv import load_dotenv
+from dataclasses import asdict
 from mlflow import runs
 import boto3
 from ultralytics import YOLO
 from shutil import copy2
 from PotholeDetection.logging.logger import logger
+from PotholeDetection.constants.constants import INGESTION_ARTIFACTS, VALIDATION_ARTIFACTS, ENV_PATH
 from PotholeDetection.config_manager.component_config import ModelTrainingConfig, ModelTrainingArtifact
 
 
@@ -92,7 +96,7 @@ class ModelTrainer:
 
     def initiate_model_training(self) -> ModelTrainingArtifact:
         try:
-            logger.info(f'Model trianing started with model: {self.config.model_name}')
+            logger.info(f'Model training started with model: {self.config.model_name}')
             runs_folder = self.train_model()
             self.save_model(runs_folder)
             s3_uri = self.upload_to_s3()
@@ -103,6 +107,10 @@ class ModelTrainer:
                 s3_model_path = self.config.s3_model_key,
                 s3_uri = s3_uri
             )
+
+            training_data = self.config.artifacts_dir/'training_artifacts.json'
+            with open(training_data, 'w') as f:
+                json.dump(asdict(training_artifacts), f, indent=4)
             
             logger.info("Model training finished successfully. Trained models saved and uploaded to S3 bucket.")
             return training_artifacts
@@ -110,3 +118,34 @@ class ModelTrainer:
         except Exception as e:
             logger.error("Error in model training")
             raise e
+        
+
+if __name__ == "__main__":
+
+    load_dotenv(str(ENV_PATH))
+
+    #load the ingestion artifacts
+    if not (INGESTION_ARTIFACTS/'ingestion_artifacts.json').exists():
+        logger.error("No artifacts created from Data Ingestion Component")
+        raise FileNotFoundError("Ingestion artifact not found. Run data_ingestion stage first.")
+    
+    with open(INGESTION_ARTIFACTS/'ingestion_artifacts.json', 'r') as f:
+        ingestion_artifacts = json.load(f)
+
+    if not (VALIDATION_ARTIFACTS/'validation_report.json').exists():
+        logger.error("No artifacts created from Data Validation Component")
+        raise FileNotFoundError("Validation artifact not found. Run data_validation stage first.")
+    
+    with open(VALIDATION_ARTIFACTS/'validation_report.json', 'r') as f:
+        validation_artifacts = json.load(f)
+
+    if not validation_artifacts['validation_status']:
+        raise Exception("Data Validation Failed. Stopping the pipeline.")
+
+    training_object = ModelTrainingConfig(
+        dataset = Path(ingestion_artifacts['dataset']),
+        validation_status = validation_artifacts['validation_status']
+    )
+
+    model_trainer = ModelTrainer(training_object)
+    training_artifacts = model_trainer.initiate_model_training()

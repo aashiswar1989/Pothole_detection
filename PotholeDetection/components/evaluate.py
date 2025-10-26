@@ -3,6 +3,7 @@ from pathlib import Path
 import json
 from ultralytics import YOLO
 from PotholeDetection.logging.logger import logger
+from PotholeDetection.constants.constants import INGESTION_ARTIFACTS
 from PotholeDetection.config_manager.component_config import ModelEvaluationConfig, ModelEvaluationArtifact
 
 
@@ -61,3 +62,18 @@ class ModelEvaluator:
         except Exception as e:
             logger.error('Error during model evaluation')
             raise e
+        
+
+if __name__ == "__main__":
+
+    #load the ingestion artifacts
+    if not (INGESTION_ARTIFACTS/'ingestion_artifacts.json').exists():
+        logger.error("No artifacts created from Data Ingestion Component")
+        raise FileNotFoundError("Ingestion artifact not found. Run data_ingestion stage first.")
+    
+    with open(INGESTION_ARTIFACTS/'ingestion_artifacts.json', 'r') as f:
+        ingestion_artifacts = json.load(f)
+
+    eval_object = ModelEvaluationConfig(dataset = Path(ingestion_artifacts['dataset']))
+    model_evaluator = ModelEvaluator(eval_object)
+    eval_artifacts = model_evaluator.initiate_model_evaluation()

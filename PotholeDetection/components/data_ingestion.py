@@ -1,6 +1,10 @@
 from pathlib import Path
+from dotenv import load_dotenv
+import json
+from dataclasses import asdict
 from PotholeDetection.config_manager.component_config import DataIngestionConfig, DataIngestionArtifact
 from PotholeDetection.logging.logger import logger
+from PotholeDetection.constants.constants import ENV_PATH
 
 import boto3
 from botocore.exceptions import NoCredentialsError
@@ -60,6 +64,14 @@ class DataIngestion:
             logger.info("Data ingestion completed successfully")
 
             ingestion_artifacts = DataIngestionArtifact(dataset = dataset_dir)
+            
+            artifact_data = self.config.artifacts_dir/'ingestion_artifacts.json'
+
+            with open(artifact_data, 'w') as f:
+                json.dump(asdict(ingestion_artifacts), f, indent=4)
+
+            logger.info(f'Ingestion artifacts saved to file: {artifact_data}')
+
             return ingestion_artifacts
 
 
@@ -67,7 +79,9 @@ class DataIngestion:
             logger.error("Error in data ingestion")
             raise e
         
-# if __name__ == "__main__":
-#     config = DataIngestionConfig()
-#     obj = DataIngestion(config)
-#     obj.initiate_data_ingestion()
+
+if __name__ == "__main__":
+    load_dotenv(str(ENV_PATH))
+    ingestion_obj = DataIngestionConfig()
+    data_ingestion = DataIngestion(ingestion_obj)
+    ingestion_artifacts = data_ingestion.initiate_data_ingestion()

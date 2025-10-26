@@ -8,7 +8,7 @@ class DataIngestionConfig:
     s3_bucket: str = S3_Bucket
     s3_prefix: str = S3_Prefix
     root_dir: Path = PROJECT_ROOT_DIR
-    artifacts_dir: Path = ARTIFACTS_ROOT/'data_ingestion'
+    artifacts_dir: Path = INGESTION_ARTIFACTS
 
 
 @dataclass
@@ -20,7 +20,7 @@ class DataValidationConfig:
     dataset: Path
     data_split: list = DATA_SPLIT
     supported_img_ext: list = VALID_IMG_EXT
-    artifacts_dir: Path = ARTIFACTS_ROOT/'data_validation'
+    artifacts_dir: Path = VALIDATION_ARTIFACTS
 
 @dataclass
 class DataValidationArtifact:
@@ -31,7 +31,7 @@ class DataValidationArtifact:
 class ModelTrainingConfig:
     dataset: Path
     validation_status: bool
-    artifacts_dir: Path = ARTIFACTS_ROOT/'training'
+    artifacts_dir: Path = TRAINING_ARTIFACTS
     model_name: str = MODEL_NAME
     img_size: int = IMG_SIZE
     epochs: int = EPOCHS
@@ -61,8 +61,8 @@ class ModelTrainingArtifact:
 @dataclass
 class ModelEvaluationConfig:
     dataset: Path
-    model_path: Path = ARTIFACTS_ROOT/'training'/'best.pt'
-    artifacts_dir: Path = ARTIFACTS_ROOT/'evaluation'
+    model_path: Path = TRAINING_ARTIFACTS/'best.pt'
+    artifacts_dir: Path = EVALUATION_ARTIFACTS
     model_name: str = MODEL_NAME
 
 @dataclass
