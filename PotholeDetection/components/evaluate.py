@@ -22,16 +22,16 @@ class ModelEvaluator:
             test_data_path = self.config.dataset/'data.yaml'
 
             #evaluate the model
-            results = model.val(data = test_data_path)
+            results = model.val(data = str(test_data_path))
             logger.info("Model evaluation completed successfully")
 
             logger.info('Genrating the mdoel evaluation report')
 
             metrics = {
-                'precision': results.results_dict.get('precision'),
-                'recall': results.results_dict.get('recall'),
-                'mAP_0.5': results.results_dict.get('mAP_0.5'),
-                'mAP_0.5:0.95': results.results_dict.get('mAP_0.5:0.95')
+                'precision': round(results.results_dict.get('metrics/precision(B)'), 2),
+                'recall': round(results.results_dict.get('metrics/recall(B)'),2),
+                'mAP_0.5': round(results.results_dict.get('metrics/mAP50(B)'),2),
+                'mAP_0.5:0.95': round(results.results_dict.get('metrics/mAP50-95(B)'),2)
             }
 
             report_content = {

@@ -7,7 +7,7 @@ import boto3
 from ultralytics import YOLO
 from shutil import copy2
 from PotholeDetection.logging.logger import logger
-from PotholeDetection.constants.constants import INGESTION_ARTIFACTS, VALIDATION_ARTIFACTS, ENV_PATH
+from PotholeDetection.constants.constants import INGESTION_ARTIFACTS, VALIDATION_ARTIFACTS, ENV_PATH, TRAINING_ARTIFACTS
 from PotholeDetection.config_manager.component_config import ModelTrainingConfig, ModelTrainingArtifact
 
 
@@ -15,6 +15,9 @@ class ModelTrainer:
     def __init__(self, config: ModelTrainingConfig):
         self.config = config
         self.s3 = boto3.client("s3")
+
+        if not self.config.artifacts_dir.exists():
+            self.config.artifacts_dir.mkdir(parents = True, exist_ok = True)
 
 
     def train_model(self):
@@ -26,7 +29,7 @@ class ModelTrainer:
             logger.info("Model training started")
             model = YOLO(self.config.model_name)
             predictions = model.train(
-                data = self.config.dataset/'data.yaml',
+                data = str(self.config.dataset/'data.yaml'),
                 imgsz = self.config.img_size,
                 epochs = self.config.epochs,
                 batch = self.config.batch_size,
@@ -58,9 +61,6 @@ class ModelTrainer:
         try:
             logger.info("Saving the trained model")
             
-            if not self.config.artifacts_dir.exists():
-                self.config.artifacts_dir.mkdir(parents = True, exist_ok = True)
-
             best_model = runs_folder/'weights'/'best.pt'
             last_model = runs_folder/'weights'/'last.pt'
 
@@ -98,10 +98,17 @@ class ModelTrainer:
     def initiate_model_training(self) -> ModelTrainingArtifact:
         try:
             logger.info(f'Model training started with model: {self.config.model_name}')
-            runs_folder = self.train_model()
-            self.save_model(runs_folder)
-            s3_uri = self.upload_to_s3()
 
+            if not (self.config.artifacts_dir/'best.pt').exists():
+                runs_folder = self.train_model()
+                self.save_model(runs_folder)
+                
+
+            else:
+                logger.info(f'Trained model already exist at {self.config.artifacts_dir}. Skipping model training')
+                # return f'Trained model already exist at {self.config.artifacts_dir}. Skipping model training'
+
+            s3_uri = self.upload_to_s3()
             training_artifacts = ModelTrainingArtifact(
                 best_model = self.config.artifacts_dir/'best.pt',
                 last_model = self.config.artifacts_dir/'last.pt',

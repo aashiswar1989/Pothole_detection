@@ -61,7 +61,7 @@ class ModelTrainingArtifact:
 @dataclass
 class ModelEvaluationConfig:
     dataset: Path
-    model_path: Path = TRAINING_ARTIFACTS/'best.pt'
+    model_path: str = str(TRAINING_ARTIFACTS/'best.pt')
     artifacts_dir: Path = EVALUATION_ARTIFACTS
     model_name: str = MODEL_NAME
 
