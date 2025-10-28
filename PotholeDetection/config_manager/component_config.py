@@ -1,5 +1,5 @@
 from pathlib import Path
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from PotholeDetection.constants.constants import *
 
@@ -18,8 +18,8 @@ class DataIngestionArtifact:
 @dataclass
 class DataValidationConfig:
     dataset: Path
-    data_split: list = DATA_SPLIT
-    supported_img_ext: list = VALID_IMG_EXT
+    data_split: list = field(default_factory=lambda: DATA_SPLIT)
+    supported_img_ext: list = field(default_factory=lambda: VALID_IMG_EXT)
     artifacts_dir: Path = VALIDATION_ARTIFACTS
 
 @dataclass

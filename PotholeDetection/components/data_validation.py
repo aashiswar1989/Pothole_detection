@@ -156,7 +156,9 @@ class DataValidation:
                                 self.invalid_annotation_files.append(ann_file)
                                 valid = False
                             
-                            class_id, x_center, y_center, width, height = parts
+                            class_id = parts[0]
+                            x_center, y_center, width, height = map(float, parts[1:])
+
                             if not (0 <= x_center <= 1 and 0 <= y_center <= 1 and 0 <= width <= 1 and 0 <= height <= 1):
                                 logger.error(f"Invalid values for bounding boxes in file: {ann_file}")
                                 self.invalid_annotation_files.append(ann_file)
@@ -273,7 +275,7 @@ class DataValidation:
             }
 
             if not self.config.artifacts_dir.exists():
-                self.config.artifacts_dir.mkdir(exist = True, parents = True)
+                self.config.artifacts_dir.mkdir(parents = True, exist_ok = True)
 
             with open(validation_report, 'w') as f:
                 json.dump(report_content, f, indent = 4)

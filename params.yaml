@@ -1,7 +1,7 @@
 train:
   MODEL_NAME: 'yolov8s.pt'
   IMG_SIZE: 640
-  EPOCHS: 50
+  EPOCHS: 1
   BATCH_SIZE: 16
   PATIENCE: 5
   OPTIMIZER: 'auto'

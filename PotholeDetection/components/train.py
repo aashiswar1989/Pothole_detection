@@ -2,7 +2,7 @@ from pathlib import Path
 import json
 from dotenv import load_dotenv
 from dataclasses import asdict
-from mlflow import runs
+# import mlflow 
 import boto3
 from ultralytics import YOLO
 from shutil import copy2
@@ -15,6 +15,7 @@ class ModelTrainer:
     def __init__(self, config: ModelTrainingConfig):
         self.config = config
         self.s3 = boto3.client("s3")
+
 
     def train_model(self):
         """
@@ -110,7 +111,7 @@ class ModelTrainer:
 
             training_data = self.config.artifacts_dir/'training_artifacts.json'
             with open(training_data, 'w') as f:
-                json.dump(asdict(training_artifacts), f, indent=4)
+                json.dump(asdict(training_artifacts), f, default = str, indent=4)
             
             logger.info("Model training finished successfully. Trained models saved and uploaded to S3 bucket.")
             return training_artifacts

@@ -68,7 +68,7 @@ class DataIngestion:
             artifact_data = self.config.artifacts_dir/'ingestion_artifacts.json'
 
             with open(artifact_data, 'w') as f:
-                json.dump(asdict(ingestion_artifacts), f, indent=4)
+                json.dump(asdict(ingestion_artifacts), f, default = str, indent=4)
 
             logger.info(f'Ingestion artifacts saved to file: {artifact_data}')
 

@@ -10,6 +10,8 @@ __pycache__/
 dataset/
 logs/
 experiments/
+artifacts/
+runs/
 
 # Distribution / packaging
 .Python
