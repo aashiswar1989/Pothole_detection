@@ -40,7 +40,6 @@ stages:
     outs:
       - artifacts/training
 
-
   model_evaluation:
     cmd: python PotholeDetection/components/evaluate.py
 
@@ -51,7 +50,7 @@ stages:
       - PotholeDetection/components/evaluate.py
 
     outs:
-      - artifacts/evaluation/evaluation_report.json
+      - artifacts/evaluation/evaluation_report.json        
 
-    metrics:
-      - artifacts/evaluation/evaluation_report.json
+    # metrics:
+    # - artifacts/evaluation/evaluation_report.json
