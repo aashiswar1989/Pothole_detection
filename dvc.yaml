@@ -35,7 +35,7 @@ stages:
       - PotholeDetection/components/train.py
 
     params:
-      - params.yaml
+      - train
 
     outs:
       - artifacts/training
@@ -52,5 +52,5 @@ stages:
     outs:
       - artifacts/evaluation/evaluation_report.json        
 
-    # metrics:
-    # - artifacts/evaluation/evaluation_report.json
+  #   # metrics:
+  #   # - artifacts/evaluation/evaluation_report.json

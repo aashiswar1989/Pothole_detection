@@ -12,6 +12,7 @@ logs/
 experiments/
 artifacts/
 runs/
+app/model_from_s3
 
 # Distribution / packaging
 .Python

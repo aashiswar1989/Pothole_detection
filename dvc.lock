@@ -1,0 +1,49 @@
+schema: '2.0'
+stages:
+  data_ingestion:
+    cmd: python PotholeDetection/components/data_ingestion.py
+    deps:
+    - path: .env
+      hash: md5
+      md5: 32531f69f9380a1b8b82e692d14e10b6
+      size: 131
+    - path: PotholeDetection/config_manager/component_config.py
+      hash: md5
+      md5: c41f1ed8d7aff915bc6a14bd020dc654
+      size: 1800
+    - path: PotholeDetection/constants/constants.py
+      hash: md5
+      md5: cf7475673d8852ae861e9a9e1c8b1e03
+      size: 1084
+    outs:
+    - path: artifacts/data_ingestion
+      hash: md5
+      md5: c5cd7f8d4534b0a92ef5b57a52ec543e.dir
+      size: 242800277
+      nfiles: 6985
+  data_validation:
+    cmd: python PotholeDetection/components/data_validation.py
+    deps:
+    - path: PotholeDetection/components/data_validation.py
+      hash: md5
+      md5: 1fc0483c000968fbdec2e021aaabe640
+      size: 12701
+    - path: PotholeDetection/config_manager/component_config.py
+      hash: md5
+      md5: c41f1ed8d7aff915bc6a14bd020dc654
+      size: 1800
+    - path: PotholeDetection/constants/constants.py
+      hash: md5
+      md5: cf7475673d8852ae861e9a9e1c8b1e03
+      size: 1084
+    - path: artifacts/data_ingestion
+      hash: md5
+      md5: c5cd7f8d4534b0a92ef5b57a52ec543e.dir
+      size: 242800277
+      nfiles: 6985
+    outs:
+    - path: artifacts/data_validation
+      hash: md5
+      md5: 0b25f256fb790e9584742ec4fea7c9da.dir
+      size: 416
+      nfiles: 1
