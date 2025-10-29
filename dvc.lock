@@ -9,41 +9,113 @@ stages:
       size: 131
     - path: PotholeDetection/config_manager/component_config.py
       hash: md5
-      md5: c41f1ed8d7aff915bc6a14bd020dc654
-      size: 1800
+      md5: 01f1236ea25a3ee21f6d0efa8a07091f
+      size: 1728
     - path: PotholeDetection/constants/constants.py
       hash: md5
-      md5: cf7475673d8852ae861e9a9e1c8b1e03
-      size: 1084
+      md5: 29e5bef4524833ed8b5fe73e97c32a0f
+      size: 1049
     outs:
     - path: artifacts/data_ingestion
       hash: md5
-      md5: c5cd7f8d4534b0a92ef5b57a52ec543e.dir
-      size: 242800277
+      md5: 84e0f4d5aabd0215b0abda568297199b.dir
+      size: 242800260
       nfiles: 6985
   data_validation:
     cmd: python PotholeDetection/components/data_validation.py
     deps:
     - path: PotholeDetection/components/data_validation.py
       hash: md5
-      md5: 1fc0483c000968fbdec2e021aaabe640
-      size: 12701
+      md5: f18a917bac46836001248ab0a2cd55d2
+      size: 12393
     - path: PotholeDetection/config_manager/component_config.py
       hash: md5
-      md5: c41f1ed8d7aff915bc6a14bd020dc654
-      size: 1800
+      md5: 01f1236ea25a3ee21f6d0efa8a07091f
+      size: 1728
     - path: PotholeDetection/constants/constants.py
       hash: md5
-      md5: cf7475673d8852ae861e9a9e1c8b1e03
-      size: 1084
+      md5: 29e5bef4524833ed8b5fe73e97c32a0f
+      size: 1049
     - path: artifacts/data_ingestion
       hash: md5
-      md5: c5cd7f8d4534b0a92ef5b57a52ec543e.dir
-      size: 242800277
+      md5: 84e0f4d5aabd0215b0abda568297199b.dir
+      size: 242800260
       nfiles: 6985
     outs:
     - path: artifacts/data_validation
       hash: md5
-      md5: 0b25f256fb790e9584742ec4fea7c9da.dir
-      size: 416
+      md5: 205bf7389fe93e6c0af162d334662928.dir
+      size: 402
       nfiles: 1
+  model_training:
+    cmd: python PotholeDetection/components/train.py
+    deps:
+    - path: .env
+      hash: md5
+      md5: 32531f69f9380a1b8b82e692d14e10b6
+      size: 131
+    - path: PotholeDetection/components/train.py
+      hash: md5
+      md5: 32c94d9cad0d619a802215d3d946c4fb
+      size: 6056
+    - path: PotholeDetection/config_manager/component_config.py
+      hash: md5
+      md5: 01f1236ea25a3ee21f6d0efa8a07091f
+      size: 1728
+    - path: PotholeDetection/constants/constants.py
+      hash: md5
+      md5: 29e5bef4524833ed8b5fe73e97c32a0f
+      size: 1049
+    - path: artifacts/data_validation
+      hash: md5
+      md5: 205bf7389fe93e6c0af162d334662928.dir
+      size: 402
+      nfiles: 1
+    params:
+      params.yaml:
+        train:
+          MODEL_NAME: yolov8s.pt
+          IMG_SIZE: 640
+          EPOCHS: 1
+          BATCH_SIZE: 16
+          PATIENCE: 5
+          OPTIMIZER: auto
+          LR0: 0.01
+          LRF: 0.01
+          MOMENTUM: 0.937
+          WEIGHT_DECAY: 0.0005
+          WORKERS: 8
+          WARMUP_EPOCHS: 3
+          VAL_DATA: true
+          PLOTS: true
+    outs:
+    - path: artifacts/training
+      hash: md5
+      md5: 21b7dc4d602b1bedd53c9ddc4077d83c.dir
+      size: 45023317
+      nfiles: 3
+  model_evaluation:
+    cmd: python PotholeDetection/components/evaluate.py
+    deps:
+    - path: PotholeDetection/components/evaluate.py
+      hash: md5
+      md5: 7ffb50bb480dd9a2179c98d3f8cba272
+      size: 3205
+    - path: PotholeDetection/config_manager/component_config.py
+      hash: md5
+      md5: 01f1236ea25a3ee21f6d0efa8a07091f
+      size: 1728
+    - path: PotholeDetection/constants/constants.py
+      hash: md5
+      md5: 29e5bef4524833ed8b5fe73e97c32a0f
+      size: 1049
+    - path: artifacts/training
+      hash: md5
+      md5: 21b7dc4d602b1bedd53c9ddc4077d83c.dir
+      size: 45023317
+      nfiles: 3
+    outs:
+    - path: artifacts/evaluation/evaluation_report.json
+      hash: md5
+      md5: cabf3c9055c4b5a6e51c3e20a9f60074
+      size: 463
