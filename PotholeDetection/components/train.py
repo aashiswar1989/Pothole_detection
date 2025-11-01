@@ -2,8 +2,10 @@ from pathlib import Path
 import json
 from dotenv import load_dotenv
 from dataclasses import asdict
-# import mlflow 
+import mlflow 
+import mlflow.pytorch
 import boto3
+from botocore.exceptions import ClientError
 from ultralytics import YOLO
 from shutil import copy2
 from PotholeDetection.logging.logger import logger
@@ -27,28 +29,25 @@ class ModelTrainer:
         """
         try:
             logger.info("Model training started")
-            model = YOLO(self.config.model_name)
+            model = YOLO(self.config.params['model_name'])
             predictions = model.train(
                 data = str(self.config.dataset/'data.yaml'),
-                imgsz = self.config.img_size,
-                epochs = self.config.epochs,
-                batch = self.config.batch_size,
-                patience = self.config.patience,
-                optimizer = self.config.optimizer,
-                lr0 = self.config.lr0,
-                lrf = self.config.lrf,
-                momentum = self.config.momentum,
-                weight_decay = self.config.weight_decay,
-                workers = self.config.workers,
-                warmup_epochs = self.config.warmup_epochs,
-                val = self.config.val_data,
-                plots = self.config.plots
+                imgsz = self.config.params['img_size'],
+                epochs = self.config.params['epochs'],
+                batch = self.config.params['batch_size'],
+                patience = self.config.params['patience'],
+                optimizer = self.config.params['optimizer'],
+                lr0 = self.config.params['lr0'],
+                lrf = self.config.params['lrf'],
+                momentum = self.config.params['momentum'],
+                weight_decay = self.config.params['weight_decay'],
+                workers = self.config.params['workers'],
+                warmup_epochs = self.config.params['warmup_epochs'],
+                val = self.config.params['val_data'],
+                plots = self.config.params['plots']
             )
 
-            runs_folder = Path(predictions.save_dir)
-            logger.info(f'Model training completed. Trained model saved at: {runs_folder}')
-
-            return runs_folder
+            return predictions
         
         except Exception as e:
             logger.error("Error during model training")
@@ -72,22 +71,44 @@ class ModelTrainer:
         except Exception as e:
             logger.error("Error in saving the model")
             raise e
+        
+        
+    def s3_file_exist(self, s3_bucket, s3_key):
+        """
+        Check if the model already exists in S3 bucket
+        """
+        try:
+            self.s3.head_object(Bucket = s3_bucket, Key = s3_key)
+            return True
+        
+        except ClientError as e:
+            if e.response['Error']['Code'] == '404':
+                logger.info("Model does not exist in S3 bucket")
+                return False
+            else:
+                raise e
+
 
     def upload_to_s3(self):
         """
         Upload the trained model to S3 bucket
         """
         try:
-            logger.info("Uploading the best mode to S3 bucket for future inference")
+            if not self.s3_file_exist(self.config.s3_bucket, self.config.s3_model_key):
+                logger.info("Uploading the best mode to S3 bucket for future inference")
 
-            self.s3.upload_file(
-                Filename = str(self.config.artifacts_dir/'best.pt'),
-                Bucket = self.config.s3_bucket,
-                Key = self.config.s3_model_key
-                )
-            
+                self.s3.upload_file(
+                    Filename = str(self.config.artifacts_dir/'best.pt'),
+                    Bucket = self.config.s3_bucket,
+                    Key = self.config.s3_model_key
+                    )
+                logger.info(f'Model successfully uploaded to {self.config.s3_bucket}/{self.config.s3_model_key}')
+
+            else:
+                logger.info('Model already exists in S3 bucket. Skipping upload')
+
             s3_uri = f's3://{self.config.s3_bucket}/{self.config.s3_model_key}'
-            logger.info(f'Model successfully uploaded to S3 at {s3_uri}')
+            
         
             return s3_uri
         
@@ -97,26 +118,60 @@ class ModelTrainer:
 
     def initiate_model_training(self) -> ModelTrainingArtifact:
         try:
-            logger.info(f'Model training started with model: {self.config.model_name}')
-
-            if not (self.config.artifacts_dir/'best.pt').exists():
-                runs_folder = self.train_model()
-                self.save_model(runs_folder)
+            logger.info("Starting MLFlow for training")
+            with mlflow.start_run():
                 
+                logger.info(f'Logging parameters {self.config.params} to MLFlow')
+                mlflow.log_params(self.config.params)
 
-            else:
-                logger.info(f'Trained model already exist at {self.config.artifacts_dir}. Skipping model training')
-                # return f'Trained model already exist at {self.config.artifacts_dir}. Skipping model training'
+                
+                logger.info(f"Model training started with model: {self.config.params['model_name']}")
+                predictions = self.train_model()
+                runs_folder = Path(predictions.save_dir)
+                self.save_model(runs_folder)
 
-            s3_uri = self.upload_to_s3()
+                metrics = {
+                    'precision': round(predictions.results_dict.get('metrics/precision(B)'), 2),
+                    'recall': round(predictions.results_dict.get('metrics/recall(B)'),2),
+                    'mAP_0.5': round(predictions.results_dict.get('metrics/mAP50(B)'),2),
+                    'mAP_0.5:0.95': round(predictions.results_dict.get('metrics/mAP50-95(B)'),2)
+                    }
+
+                logger.info(f'Logging metrics {metrics} to MLFlow')
+                mlflow.log_metrics(metrics)  
+
+                confusion_matrix = runs_folder/'confusion_matrix.png'
+                pr_curve = runs_folder/'PR_curve.png'
+                results_csv = runs_folder/'results.csv'
+
+                logger.info(f'Logging results.csv, confusion_matrix and pr_curve as artifacts to MLFlow')
+                mlflow.log_artifact(confusion_matrix, artifact_path = 'confusion_matrix')
+                mlflow.log_artifact(pr_curve, artifact_path = 'pr_curve')
+                mlflow.log_artifact(results_csv, artifact_path = 'results.csv')
+
+
+                # Save model to S3                
+                s3_uri = self.upload_to_s3()
+                mlflow.log_param('s3_uri', s3_uri)
+
+                best_model = self.config.artifacts_dir/'best.pt'
+                last_model = self.config.artifacts_dir/'last.pt'
+                
+                logger.info(f'Logging best_model and last_model as artifacts to MLFlow')
+                mlflow.log_artifact(best_model, artifact_path = 'best_model')
+                mlflow.log_artifact(last_model, artifact_path = 'last_model')
+
+            
             training_artifacts = ModelTrainingArtifact(
-                best_model = self.config.artifacts_dir/'best.pt',
-                last_model = self.config.artifacts_dir/'last.pt',
+                best_model = best_model,
+                last_model = last_model,
                 s3_model_path = self.config.s3_model_key,
                 s3_uri = s3_uri
             )
-
+            
             training_data = self.config.artifacts_dir/'training_artifacts.json'
+            logger.info(f'Creating brief report of model training artifacts at {training_data}')
+
             with open(training_data, 'w') as f:
                 json.dump(asdict(training_artifacts), f, default = str, indent=4)
             

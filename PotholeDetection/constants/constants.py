@@ -13,21 +13,23 @@ S3_Prefix = 'dataset/'
 S3_Model_Key = 'models/best_model.pt'
 DATA_SPLIT = ['train', 'test', 'valid']
 VALID_IMG_EXT = ['.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.tif', '.webp']
-MODEL_NAME = 'yolov8s.pt'
-IMG_SIZE = 640
-EPOCHS = 1
-BATCH_SIZE = 16
-PATIENCE = 5
-OPTIMIZER = 'auto'
-LR0 = 0.01
-LRF = 0.01
-MOMENTUM = 0.937
-WEIGHT_DECAY = 0.0005
-WORKERS = 8
-WARMUP_EPOCHS = 3
-VAL_DATA = True
-PLOTS = True
-
+PARAMS = {
+    'model_name' : 'yolov8s.pt',
+    'img_size' : 640,
+    'epochs': 1,
+    'batch_size' : 16,
+    'patience' : 5,
+    'optimizer' : 'auto',
+    'lr0' : 0.01,
+    'lrf' : 0.01,
+    'momentum' : 0.937,
+    'weight_decay' : 0.0005,
+    'workers' : 8,
+    'warmup_epochs' : 3,
+    'val_data' : True,
+    'plots' : True
+}
+METRICS = ['precision', 'recall', 'mAP_0.5', 'mAP_0.5:0.95']
 
 # DATASET_PATH = Path(r'C:\AI_ML\Projects\Pothole_Detection\dataset')
 # TRAIN_DATA = DATASET_PATH/'train'

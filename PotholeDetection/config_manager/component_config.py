@@ -32,20 +32,7 @@ class ModelTrainingConfig:
     dataset: Path
     validation_status: bool
     artifacts_dir: Path = TRAINING_ARTIFACTS
-    model_name: str = MODEL_NAME
-    img_size: int = IMG_SIZE
-    epochs: int = EPOCHS
-    batch_size: int = BATCH_SIZE
-    patience: int = PATIENCE
-    optimizer: str = OPTIMIZER
-    lr0: float = LR0
-    lrf: float = LRF
-    momentum: float = MOMENTUM
-    weight_decay: float = WEIGHT_DECAY
-    workers: int = WORKERS
-    warmup_epochs: int = WARMUP_EPOCHS
-    val_data: bool = VAL_DATA
-    plots: bool = PLOTS
+    params: dict = field(default_factory=lambda: PARAMS)
     s3_bucket: str = S3_Bucket
     s3_model_key: str = S3_Model_Key
 
@@ -63,7 +50,7 @@ class ModelEvaluationConfig:
     dataset: Path
     model_path: str = str(TRAINING_ARTIFACTS/'best.pt')
     artifacts_dir: Path = EVALUATION_ARTIFACTS
-    model_name: str = MODEL_NAME
+    model_name: str = PARAMS['model_name']
 
 @dataclass
 class ModelEvaluationArtifact:

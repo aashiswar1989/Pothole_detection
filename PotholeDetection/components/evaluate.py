@@ -2,6 +2,7 @@ import datetime
 from pathlib import Path
 import json
 from ultralytics import YOLO
+import mlflow
 from PotholeDetection.logging.logger import logger
 from PotholeDetection.constants.constants import INGESTION_ARTIFACTS
 from PotholeDetection.config_manager.component_config import ModelEvaluationConfig, ModelEvaluationArtifact
@@ -15,43 +16,52 @@ class ModelEvaluator:
         logger.info('Starting evaluation for trained model')
         
         try:
-            #Load the model
-            model = YOLO(self.config.model_path)
-            logger.info(f'Loaded model from {model}')
+            with mlflow.start_run():
+                logger.info('Logging evaluation parameters to MLFlow')
+                mlflow.log_param('model_name', str(self.config.model_name))
+                mlflow.log_param('model_path', str(self.config.model_path))
 
-            test_data_path = self.config.dataset/'data.yaml'
+                #Load the model
+                model = YOLO(self.config.model_path)
+                logger.info(f'Loaded model from {self.config.model_path}')
 
-            #evaluate the model
-            results = model.val(data = str(test_data_path))
-            logger.info("Model evaluation completed successfully")
+                test_data_path = self.config.dataset/'data.yaml'
 
-            logger.info('Genrating the mdoel evaluation report')
+                #evaluate the model
+                results = model.val(data = str(test_data_path))
+                logger.info("Model evaluation completed successfully")
 
-            metrics = {
-                'precision': round(results.results_dict.get('metrics/precision(B)'), 2),
-                'recall': round(results.results_dict.get('metrics/recall(B)'),2),
-                'mAP_0.5': round(results.results_dict.get('metrics/mAP50(B)'),2),
-                'mAP_0.5:0.95': round(results.results_dict.get('metrics/mAP50-95(B)'),2)
-            }
+                metrics = {
+                    'precision': round(results.results_dict.get('metrics/precision(B)'), 2),
+                    'recall': round(results.results_dict.get('metrics/recall(B)'),2),
+                    'mAP_0.5': round(results.results_dict.get('metrics/mAP50(B)'),2),
+                    'mAP_0.5:0.95': round(results.results_dict.get('metrics/mAP50-95(B)'),2)
+                }
 
-            report_content = {
-                'timestamp': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                'Model Name': self.config.model_name,
-                'Trained Model Path': str(self.config.model_path),
-                'Evaluation Metrics': metrics,
-                'confusion matrix': str(results.save_dir/'confusion_matrix.png'),
-                'pr curve': str(results.save_dir/'PR_curve.png')
-            }
+                mlflow.log_metrics(metrics)
 
-            if not self.config.artifacts_dir.exists():
-                self.config.artifacts_dir.mkdir(parents = True, exist_ok = True)
+                report_content = {
+                    'timestamp': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    'Model Name': self.config.model_name,
+                    'Trained Model Path': str(self.config.model_path),
+                    'Evaluation Metrics': metrics,
+                    'confusion matrix': str(results.save_dir/'confusion_matrix.png'),
+                    'pr curve': str(results.save_dir/'PR_curve.png')
+                }
 
-            evaluation_report = self.config.artifacts_dir/'evaluation_report.json'
-            # metrics_report = self.config.artifacts_dir/'metrics.json'
-            with open(evaluation_report, 'w') as f:
-                json.dump(report_content, f, indent = 4)
+                if not self.config.artifacts_dir.exists():
+                    self.config.artifacts_dir.mkdir(parents = True, exist_ok = True)
 
-            logger.info(f'Evaluation report saved at {evaluation_report}')
+                evaluation_report = self.config.artifacts_dir/'evaluation_report.json'
+                # metrics_report = self.config.artifacts_dir/'metrics.json'
+                logger.info(f'Creating evaluation report at {evaluation_report}')
+                with open(evaluation_report, 'w') as f:
+                    json.dump(report_content, f, indent = 4)
+
+                logger.info(f'Evaluation report saved at {evaluation_report}')
+
+                mlflow.log_artifact(evaluation_report, artifact_path = 'evaluation_report')
+
 
             eval_artifacts = ModelEvaluationArtifact(
                 eval_report = evaluation_report,
