@@ -1,0 +1,40 @@
+version: "3.9"
+
+services:
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: pothole-detection_api
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    
+    restart: unless-stopped
+
+  ui:
+    build:
+      context: .
+      dockerfile: Dockerfile.ui
+    
+    container_name: pothole-detection_ui
+    ports:
+      - "7860:7860"
+    
+    environment:
+      FASTAPI_URL: http://api:8000/detect
+
+    depends_on:
+      - api
+
+    volumes:
+      - .:/app
+    
+    restart: unless-stopped
+
+
+    

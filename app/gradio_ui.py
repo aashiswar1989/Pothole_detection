@@ -2,9 +2,11 @@ from fastapi import FastAPI
 import gradio as gr
 from PotholeDetection.logging.logger import logger
 import json
+import os
 import requests
 
-FASTAPI_URL = 'http://127.0.0.1:8000/detect'
+# FASTAPI_URL = 'http://127.0.0.1:8000/detect'
+FASTAPI_URL = os.environ.get("FASTAPI_URL", "http://127.0.0.1:8000/detect")
 
 
 def detect_potholes(image):
