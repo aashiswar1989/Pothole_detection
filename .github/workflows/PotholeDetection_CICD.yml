@@ -68,12 +68,11 @@ jobs:
               # cache-to: type=registry, ref=${{secrets.DOCKER_USERNAME}}/pothole-detector:cache, mode=max
 
       - name: Build images using docker compose
+        run: docker compose build
         env:
             AWS_ACCESS_KEY_ID = ${{secrets.AWS_ACCESS_KEY_ID}}
             AWS_SECRET_ACCESS_KEY = ${{secrets.AWS_SECRET_ACCESS_KEY}}
             AWS_REGION = ${{secrets.AWS_REGION}}
-
-        run: docker compose build
 
       - name: Check if containers run porperly
         run: | 
