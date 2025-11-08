@@ -1,0 +1,6 @@
+ultralytics
+boto3
+fastapi
+uvicorn
+python-dotenv
+python-multipart

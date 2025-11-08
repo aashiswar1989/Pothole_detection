@@ -51,7 +51,7 @@ def gradio_interface():
                         inputs = None,
                         outputs = [image_in, json_out])
         
-        demo.launch(server_name = '0.0.0.0', server_port = 7860)
+        demo.launch(server_name = '0.0.0.0', server_port = 7860, inbrowser=False, share=False)
 
 if __name__ == '__main__':
     gradio_interface()

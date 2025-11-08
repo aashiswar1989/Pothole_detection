@@ -2,12 +2,14 @@ FROM ultralytics/ultralytics:8.3.220-cpu
 
 WORKDIR /app
 
-COPY requirements.txt ./
+COPY app/requirements.txt .
 
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 COPY . .
+
+ENV PYTHONPATH=/app
 
 EXPOSE 8000
 
