@@ -1,7 +1,9 @@
 from fastapi import FastAPI
+from pathlib import Path
 import gradio as gr
 from PotholeDetection.logging.logger import logger
 import json
+import mimetypes
 import os
 import requests
 
@@ -21,8 +23,19 @@ def detect_potholes(image):
         if response.status_code != 200:
             return f'Internal Server Error: {response.status_code}: {response.text}'
         
-        result = json.dumps(response.json(), indent=2)
-        return result
+        # result = json.dumps(response.json(), indent=2)
+        
+        # Determine the image extension from Content-Type header
+        content_type = response.headers.get("content-type", "")
+        extension = mimetypes.guess_extension(content_type) or ".jpg"
+
+        # Create an output file with correct extension
+        pred_img = f"annotated_output{extension}"
+
+        with open(pred_img, 'wb') as f:
+            f.write(response.content)
+        
+        return pred_img
 
 
     except Exception as e:
@@ -37,7 +50,8 @@ def gradio_interface():
 
         with gr.Row():
             image_in = gr.Image(type = 'filepath', label = 'Upload image')
-            json_out = gr.Code(label = 'Detections', language= 'json')
+            # json_out = gr.Code(label = 'Detections', language= 'json')
+            image_out = gr.Image(label = 'Detections')
 
         with gr.Row():
             detect_btn = gr.Button('Detect', variant='primary')
@@ -45,11 +59,11 @@ def gradio_interface():
 
         detect_btn.click(detect_potholes,
                          inputs = image_in,
-                         outputs = json_out)
+                         outputs = image_out)
         
         reset_btn.click(fn = lambda : (None,None),
                         inputs = None,
-                        outputs = [image_in, json_out])
+                        outputs = [image_in, image_out])
         
         demo.launch(server_name = '0.0.0.0', server_port = 7860, inbrowser=False, share=False)
 

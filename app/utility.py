@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import boto3
 
 from PotholeDetection.logging.logger import logger
-from PotholeDetection.constants.constants import S3_Bucket, S3_Model_Key, ENV_PATH, APP_PATH
+from PotholeDetection.constants.constants import S3_Bucket, S3_Model_Key, ENV_PATH, APP_PATH, ARTIFACTS_ROOT
 
 class ApiUtility:
     def __init__(self):
@@ -36,6 +36,12 @@ class ApiUtility:
         logger.info("Model loaded successfully")
         return model
     
+    def artifacts_path(self):
+        output_path = ARTIFACTS_ROOT/'output'
+        if not output_path.exists():
+            output_path.mkdir(parents = True, exist_ok = True)
+
+        return output_path
     
     def get_detections(self, results):
         detections = []

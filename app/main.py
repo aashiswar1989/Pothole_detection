@@ -1,6 +1,7 @@
 from pathlib import Path
+import mimetypes
 from fastapi import FastAPI, File, UploadFile
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 import uvicorn
 from app.utility import ApiUtility
 from PotholeDetection.logging.logger import logger
@@ -14,6 +15,8 @@ app = FastAPI(title = "Pothole Detection API",
 app_utils = ApiUtility()
 app_utils.download_model()
 model = app_utils.load_model()
+pred_path = app_utils.artifacts_path()
+
 
 @app.get('/')
 async def home():
@@ -32,22 +35,31 @@ async def detect_potholes(file: UploadFile = File(...)):
         file_path = temp_file(file, file_content)
 
         # Run inference
-        results = model.predict(str(file_path), conf = 0.3)
+        results = model.predict(str(file_path), conf = 0.3, save = True, project = str(pred_path))
 
         # Process results
         detections = app_utils.get_detections(results)
+
+        #Get prediction image
+        pred_img = Path(results[0].save_dir)/file.filename
+        logger.info(f"YOLO save_dir: {results[0].save_dir}")
+        logger.info(f"Predicted image expected at: {pred_img}")
+        logger.info(f"File exists? {pred_img.exists()}")
 
         # Clean up temporary file
         temp_file(file_obj = file, delete = True)
 
         logger.info("Pothole detection completed successfully.")
         
-        return JSONResponse(status_code = 200,
-                            content = {
-                                'image_name': file.filename,
-                                'number_of_detections': len(detections),
-                                'detections': detections
-                            })
+        # return JSONResponse(status_code = 200,
+        #                     content = {
+        #                         'image_name': file.filename,
+        #                         'number_of_detections': len(detections),
+        #                         'detections': detections
+        #                     })
+
+        mime_type, _ = mimetypes.guess_type(pred_img)
+        return FileResponse(str(pred_img), status_code=200, media_type=mime_type)
 
     except Exception as e:
         logger.error(f"Error during pothole detection: {e}")
